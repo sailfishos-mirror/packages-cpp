@@ -369,7 +369,7 @@ PREDICATE(if_then_ffi, 4)
   term_t t1 = A1.unwrap(), t2 = A2.unwrap();
   int t1_t2_unified = PL_unify(t1, t2);
   if ( !t1_t2_unified )
-  { if ( PL_exception(0) )
+  { if ( Plx_exception(0) )
       { PL_close_foreign_frame(fid);
         return FALSE;
       }

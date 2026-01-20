@@ -67,7 +67,7 @@ bool ex_is_resource_error(PlTerm ex)
 _SWI_CPP2_CPP_inline
 void
 PlWrap_fail(qid_t qid)
-{ PlTerm ex(PL_exception(qid));
+{ PlTerm ex(Plx_exception(qid));
   if ( ex.not_null() )
   { // The error(resource_error(stack), _) exception is special because
     // nothing can be put on the stack, so all we can do is report failure
@@ -86,7 +86,7 @@ PlWrap_fail(qid_t qid)
 _SWI_CPP2_CPP_inline
 void
 PlEx_fail(qid_t qid)
-{ PlTerm ex(PL_exception(qid));
+{ PlTerm ex(Plx_exception(qid));
   if ( ex.not_null() )
   { // The error(resource_error(stack), _) exception is special because
     // nothing can be put on the stack, so all we can do is report failure
