@@ -1306,7 +1306,7 @@ PlException PlResourceError(const std::string& resource);
 
 PlException PlUnknownError(const std::string& description);
 
-void PlWrap_fail(qid_t qid);
+void PlWrap_fail(qid_t qid = 0);
 
 template<typename C_t> C_t
 PlWrap(C_t rc, qid_t qid)
@@ -1492,7 +1492,7 @@ public:
                                      av.termv())),
       flags_(flags)
   { }
-  PlQuery(qid_t qid)
+  PlQuery(qid_t qid = 0)
     : WrappedC<qid_t>(qid)
   { }
 
