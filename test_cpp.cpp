@@ -369,7 +369,7 @@ PREDICATE(if_then_ffi, 4)
   term_t t1 = A1.unwrap(), t2 = A2.unwrap();
   int t1_t2_unified = PL_unify(t1, t2);
   if ( !t1_t2_unified )
-  { if ( Plx_exception(0) )
+  { if ( Plx_exception() )
       { PL_close_foreign_frame(fid);
         return FALSE;
       }
@@ -477,7 +477,7 @@ PREDICATE(cpp_call_, 3)
     { if ( verbose )
 	strm.printf("cpp_call result: rc=%d: %s\n", rc, A1.as_string().c_str());
     } else
-    { PlTerm ex(Plx_exception(0));
+    { PlTerm ex(Plx_exception());
       if ( ex.is_null() )
       { if ( verbose )
 	  strm.printf("cpp_call failed\n");
@@ -502,7 +502,7 @@ PREDICATE(cpp_call_, 3)
 PREDICATE(cpp_atom_codes, 2)
 { int rc = PlCall("atom_codes", PlTermv(A1, A2));
   if ( !rc )
-  { PlException ex(PlTerm(Plx_exception(0)));
+  { PlException ex(PlTerm(Plx_exception()));
     PlStream strm(Scurrent_output);
     if ( ex.is_null() )
       strm.printf("atom_codes failed\n");
