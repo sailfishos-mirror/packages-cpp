@@ -114,6 +114,14 @@ PREDICATE(hello, 2)
   return A2.unify_string(buffer.str());
 }
 
+PREDICATE(helloex, 0)
+{ throw PlUnknownError("an exception");
+}
+
+PREDICATE(helloex, 1)
+{ throw PlUnknownError(A1);
+}
+
 PREDICATE(hello2, 2)
 { PlAtom atom_a1(A1.as_atom());
   std::stringstream buffer;
@@ -501,13 +509,16 @@ PREDICATE(cpp_call_, 3)
 
 PREDICATE(cpp_atom_codes, 2)
 { int rc = PlCall("atom_codes", PlTermv(A1, A2));
+  PlStream strm(Scurrent_output); // for debugging output
   if ( !rc )
-  { PlException ex{PlTerm(Plx_exception())};
-    PlStream strm(Scurrent_output);
+  { PlExceptionFromQid ex;
     if ( ex.is_null() )
       strm.printf("atom_codes failed\n");
     else
       strm.printf("atom_codes failed: ex: %s\n", ex.as_string().c_str()); // Shouldn't happen
+    throw ex;
+  } else
+  { strm.printf("atom_codes succeeded: %s -> %s\n", A1.as_string().c_str(), A2.as_string().c_str());
   }
   return rc;
 }

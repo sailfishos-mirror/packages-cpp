@@ -92,6 +92,11 @@ test(hello, Out == "hello hello hello") :-
     % hello :- write('hello hello hello')
     with_output_to(string(Out), hello).
 
+test(helloex, error(unknown_error('an exception'))) :-
+    helloex.
+test(helloex, error(unknown_error(foo(bar)))) :-
+    helloex(foo(bar)).
+
 test(hello, Out == "Hello WORLD\nHello WORLD\nHello WORLD\nHello WORLD\nHello WORLD\n") :-
     hello("WORLD", Out).
 test(hello, error(representation_error(encoding))) :-
@@ -283,6 +288,7 @@ test(cappend, fail) :-
 test(cappend, fail) :-
     cappend([a,b,c], [d,e], [a,b,c,d,e|f]).
 
+%% TODO: add more tests of cpp_call/2
 test(cpp_call, Out == "abc\n") :-
     with_output_to(string(Out),
 		   cpp_call(writeln(abc), [normal])).
@@ -290,6 +296,13 @@ test(cpp_call, Out == "abc\n") :-
 cpp_call(Goal, Flags) :-
     query_flags(Flags, CombinedFlag),
     cpp_call_(Goal, CombinedFlag, false).
+
+test(cpp_atom_codes, Out == [102,111,111]) :-
+    cpp_atom_codes(foo, Out).
+test(cpp_atom_codes, Out == [49,50,51]) :-
+    cpp_atom_codes(123, Out).
+test(cpp_atom_codes, error(type_error(atom,a(f)))) :-
+    cpp_atom_codes(a(f), _Out).
 
 test(square_roots_2, Result == [0.0, 1.0, 1.4142135623730951, 1.7320508075688772, 2.0]) :-
     square_roots(4, Result).
