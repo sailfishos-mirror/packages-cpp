@@ -339,11 +339,10 @@ with_small_stacks(Free, Goal) :-
     statistics(trailused, T),
     statistics(localused, L),
     NewLimit is G+L+T+Free,
-    current_prolog_flag(stack_limit, Old),
     setup_call_cleanup(
-	set_prolog_flag(stack_limit, NewLimit),
+	push_prolog_flag(stack_limit, NewLimit),
 	Goal,
-	set_prolog_flag(stack_limit, Old)).
+	pop_prolog_flag(stack_limit)).
 
 test(square_roots_2, error(resource_error(stack))) :-
     with_small_stacks(5 000 000, % 400 000 seems to be about the smallest allowed value
