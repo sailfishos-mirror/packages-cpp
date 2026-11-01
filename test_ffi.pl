@@ -365,6 +365,13 @@ match_existence_error_term(Term) :-
     assertion(subsumes_term(error(existence_error(procedure, test_ffi:unknown_pred/1),
                                   context(_,_)), Term)).
 
+% #1560: retrying a query opened directly on a predicate whose
+% remaining choicepoint is in the query frame did not restore the
+% environment frame, so the deterministic foreign last call received
+% an argument that failed the validate_api check.
+test(query_retry_lco, Count == 2) :-
+    ffi_count_solutions(query_retry_lco, Count).
+
 test(ffi_call_no_options, blocked('Activates trace/debug mode')) :-
     ffi_call(non_existant_pred(foo), [], "").
 test(ffi_call_normal, blocked('Invokes debugger')) :-
@@ -435,6 +442,10 @@ ffi_findall_bug_p(L) :-
     ffi_findall_bug_(ffi_p(_), L).
 
 :- end_tests(call).
+
+% Must be in module test_ffi; see test(query_retry_lco).
+query_retry_lco :-
+    ffi_atom_arg(foo) ; ffi_atom_arg(bar).
 
 
 :- begin_tests(arg_values).

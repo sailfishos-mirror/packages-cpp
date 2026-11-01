@@ -389,6 +389,36 @@ ffi_call_exc_(term_t goal, term_t flags_t,
   }
 }
 
+/** ffi_count_solutions(+Name, -Count)
+   Count the solutions of test_ffi:Name/0, opening the query directly
+   on the predicate rather than through call/1.  See #1560.
+*/
+static foreign_t
+ffi_count_solutions_(term_t name_t, term_t count_t)
+{ char *name;
+  if ( !PL_get_atom_chars(name_t, &name) )
+    return PL_type_error("atom", name_t);
+
+  predicate_t pred = PL_predicate(name, 0, "test_ffi");
+  qid_t qid = PL_open_query(0, PL_Q_PASS_EXCEPTION, pred, 0);
+  if ( !qid )
+    return FALSE;
+  int count = 0;
+  while ( PL_next_solution(qid) )
+    count++;
+  bool ok = !PL_exception(qid);
+  if ( !PL_cut_query(qid) || !ok )
+    return FALSE;
+  return PL_unify_integer(count_t, count);
+}
+
+/* Deterministic foreign predicate that validates its argument */
+static foreign_t
+ffi_atom_arg_(term_t a)
+{ char *s;
+  return PL_get_atom_chars(a, &s);
+}
+
 /* For debugging: unit tests can swallow debug output when there's
    a system crash, so use sdprintf_() or sdprintfnl_() instead. */
 /* TODO: is this needed?   :- set_test_options([output(always)]). */
@@ -871,6 +901,8 @@ install_test_ffi(void)
   PL_register_foreign("atom_ffi_",    2, atom_ffi_,     0);
   PL_register_foreign("ffi_options",  2, ffi_options_,  0);
   PL_register_foreign("ffi_call_exc", 6, ffi_call_exc_, 0); /* TODO: PL_FA_META */
+  PL_register_foreign("ffi_count_solutions", 2, ffi_count_solutions_, 0);
+  PL_register_foreign("ffi_atom_arg", 1, ffi_atom_arg_, 0);
   PL_register_foreign("sdprintf",     1, sdprintf_,     0);
   PL_register_foreign("sdprintfnl",   1, sdprintfnl_,   0);
   PL_register_foreign("query_flags_str",     2, query_flags_str_,     0);
