@@ -412,6 +412,58 @@ ffi_count_solutions_(term_t name_t, term_t count_t)
   return PL_unify_integer(count_t, count);
 }
 
+/** ffi_exception_with_signal(:Goal, -String)
+   Run Goal, which must raise an exception, using PL_Q_PASS_EXCEPTION.
+   With the exception pending, raise a signal and convert the exception
+   to a string.  A signal raised while an exception is pending must not
+   make the conversion fail: signal handling is deferred.  The signal
+   is a synthetic one in the Prolog range, so this also works on
+   systems without POSIX signals.
+*/
+
+static void
+ignore_signal(int sig)
+{ (void)sig;
+}
+
+static foreign_t
+ffi_exception_with_signal_(term_t goal, term_t str_t)
+{ predicate_t call_pred = PL_predicate("call", 1, NULL);
+  static int sig = 0;
+  bool ok = false;
+
+  if ( !sig )
+  { pl_sigaction_t act = { .sa_cfunction = ignore_signal,
+			   .sa_flags = PLSIG_SYNC };
+
+    if ( (sig = PL_sigaction(0, &act, NULL)) <= 0 )
+    { sig = 0;
+      return PL_resource_error("signals");
+    }
+  }
+
+  qid_t qid = PL_open_query(0, PL_Q_PASS_EXCEPTION, call_pred, goal);
+  if ( !qid )
+    return FALSE;
+  if ( !PL_next_solution(qid) )
+  { term_t ex = PL_exception(qid);
+
+    if ( ex )
+    { char *s;
+
+      PL_raise(sig);
+      PL_STRINGS_MARK();
+      if ( PL_get_nchars(ex, NULL, &s, CVT_WRITEQ|REP_UTF8|CVT_EXCEPTION) )
+	ok = PL_unify_chars(str_t, PL_STRING|REP_UTF8, (size_t)-1, s);
+      PL_STRINGS_RELEASE();
+    }
+  }
+  PL_cut_query(qid);
+  PL_clear_exception();
+
+  return ok;
+}
+
 /* Deterministic foreign predicate that validates its argument */
 static foreign_t
 ffi_atom_arg_(term_t a)
@@ -903,6 +955,8 @@ install_test_ffi(void)
   PL_register_foreign("ffi_call_exc", 6, ffi_call_exc_, 0); /* TODO: PL_FA_META */
   PL_register_foreign("ffi_count_solutions", 2, ffi_count_solutions_, 0);
   PL_register_foreign("ffi_atom_arg", 1, ffi_atom_arg_, 0);
+  PL_register_foreign("ffi_exception_with_signal", 2,
+		      ffi_exception_with_signal_, 0);
   PL_register_foreign("sdprintf",     1, sdprintf_,     0);
   PL_register_foreign("sdprintfnl",   1, sdprintfnl_,   0);
   PL_register_foreign("query_flags_str",     2, query_flags_str_,     0);

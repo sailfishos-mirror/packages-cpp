@@ -441,6 +441,11 @@ ffi_findall_p(L) :-
 ffi_findall_bug_p(L) :-
     ffi_findall_bug_(ffi_p(_), L).
 
+% A signal that arrives while an exception is pending must not make
+% foreign code that uses the exception term (here PL_get_nchars()) fail.
+test(signal_pending_exception, Str == "foo") :-
+    ffi_exception_with_signal(throw(foo), Str).
+
 :- end_tests(call).
 
 % Must be in module test_ffi; see test(query_retry_lco).
